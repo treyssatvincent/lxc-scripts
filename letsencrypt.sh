@@ -15,7 +15,7 @@ fi
 if [ ! -f ~/letsencrypt/account.key ]
 then
   # openssl genrsa 4096 > ~/letsencrypt/account.key
-  openssl ecparam -genkey -name secp384r1 > ~/letsencrypt/account.key
+  openssl ecparam -genkey -name prime256v1 > ~/letsencrypt/account.key
 fi
 
 if [ ! -f ~/letsencrypt/lets-encrypt-x3-cross-signed.pem ]
@@ -87,7 +87,7 @@ challengedir=/var/lib/certs/tmp/$cid/challenge/.well-known/acme-challenge/
 
   cd ~/letsencrypt
   # openssl genrsa 4096 > $domain.key
-  openssl ecparam -genkey -name secp384r1 > $domain.key
+  openssl ecparam -genkey -name prime256v1 > $domain.key
   # openssl req -new -sha256 -key $domain.key -subj "/CN=$domain" > $domain.csr
   openssl req -new -sha512 -key $domain.key -subj "/CN=$domain" > $domain.csr
   sed -i "s~return 302~#return 302~g" $domainconf
