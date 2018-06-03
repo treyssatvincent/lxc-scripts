@@ -2,23 +2,31 @@
 server {
     listen HOSTIP:80;
     server_name CONTAINERURL;
-    return 302 https://$host$request_uri;
+    return 301 https://$host$request_uri;
     #location / { root /var/lib/certs/tmp/CONTAINERPORT/challenge; }
 }
 
 server {
-    listen 443 ssl;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name  CONTAINERURL;
- 
-    ssl_certificate /var/lib/certs/CONTAINERURL.crt;  
+
+    ssl_certificate /var/lib/certs/CONTAINERURL.crt;
     ssl_certificate_key /var/lib/certs/CONTAINERURL.key;
     ssl_session_cache shared:SSL:10m;
-    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;  # don't use SSLv3 ref: POODLE
+    ssl_protocols  TLSv1.2;
 
-    # Logjam https://weakdh.org/sysadmin.html
-    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+    ssl_ciphers 'ECDH+CHACHA20:ECDHE+AES:!SHA1';
     ssl_prefer_server_ciphers on;
     ssl_dhparam /var/lib/certs/dhparams.pem;
+    ssl_ecdh_curve prime256v1:secp384r1:secp521r1;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-Frame-Options "DENY";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Content-Security-Policy "default-src 'self';";
 
     access_log  /var/log/nginx/log/CONTAINERURL.access.log;
     error_log  /var/log/nginx/log/CONTAINERURL.error.log;
@@ -26,7 +34,7 @@ server {
     index  index.html index.htm;
 
     client_max_body_size 30M;
- 
+
     ## send request back to container ##
     location / {
      proxy_pass  http://CONTAINERIP:CONTAINERPORT/SUBDIR;

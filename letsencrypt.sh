@@ -14,7 +14,8 @@ fi
 
 if [ ! -f ~/letsencrypt/account.key ]
 then
-  openssl genrsa 4096 > ~/letsencrypt/account.key
+  # openssl genrsa 4096 > ~/letsencrypt/account.key
+  openssl ecparam -genkey -name secp384r1 > ~/letsencrypt/account.key
 fi
 
 if [ ! -f ~/letsencrypt/lets-encrypt-x3-cross-signed.pem ]
@@ -85,8 +86,10 @@ challengedir=/var/lib/certs/tmp/$cid/challenge/.well-known/acme-challenge/
   echo "new certificate for $domain"
 
   cd ~/letsencrypt
-  openssl genrsa 4096 > $domain.key
-  openssl req -new -sha256 -key $domain.key -subj "/CN=$domain" > $domain.csr
+  # openssl genrsa 4096 > $domain.key
+  openssl ecparam -genkey -name secp384r1 > $domain.key
+  # openssl req -new -sha256 -key $domain.key -subj "/CN=$domain" > $domain.csr
+  openssl req -new -sha512 -key $domain.key -subj "/CN=$domain" > $domain.csr
   sed -i "s~return 302~#return 302~g" $domainconf
   sed -i "s~#location / { root .*/tmp/.*}~location / { root /var/lib/certs/tmp/$cid/challenge; }~g" $domainconf
   mkdir -p $challengedir

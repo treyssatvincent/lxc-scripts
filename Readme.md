@@ -1,47 +1,19 @@
-Purpose
--------
-
-These scripts are useful to manage your own server, with several Linux containers.
-
-Installation
-------------
-
-* Either clone this code repository: `cd ~; git clone https://github.com/tpokorra/lxc-scripts.git scripts`
-* Or install a package from LBS: https://lbs.solidcharity.com/package/tpokorra/lbs/lxc-scripts
- * There is a lxc-scripts package for CentOS7, Fedora 22, and Ubuntu 14.04, with instructions how to install the package
- * To make things easier, I usually create a symbolic link: `cd ~; ln -s /usr/share/lxc-scripts scripts`
-
-After installing the package, run these scripts for initializing the firewall and some fixes for the LXC templates:
-
-    /usr/share/lxc-scripts/initLXC.sh
-    /usr/share/lxc-scripts/initIPTables.sh
-
-CheatSheet for my LXC scripts
+Changes on this branch
 ---------------------------------
-
-* Initialise the host IPTables so that they will be survive a reboot: `~/scripts/initIPTables.sh`
-* Small fixes to the LXC system for CentOS7 and Fedora containers, and create ssh keys: `~/scripts/initLXC.sh`
-* Create a container (with networking etc): `~/scripts/initFedora.sh $name $id`
- * Call the script without parameters to see additional parameters, eg to specify the version of the OS etc: `~/scripts/initFedora.sh`
- * There are scripts for creating Fedora, CentOS, Debian, and Ubuntu containers
-* Containers are created in `/var/lib/lxc/$name`, see the file `config` and the directory `rootfs`
-* Start a container: `lxc-start --name $name`
-* Start a container without console: `lxc-start -d --name $name`
-* Stop a container: `lxc-stop -n $name`
-* Destroy a container: `lxc-destroy --name $name`
-* List all containers, with running state and IP address: `lxc-ls -f`
- * alternatively, there is this script: `~/scripts/listcontainers.sh` which works even on CentOS where python3 is not (yet) available
- * this also shows the OS of the container
- * ~/scripts/listcontainers.sh running: shows only running containers
- * ~/scripts/listcontainers.sh stopped: shows only stopped containers
-* Stop all containers: `~/scripts/stopall.sh`
-
-Snapshots:
-* are stored in `/var/lib/lxcsnaps/`
-* first stop the container: `lxc-stop -n $name`
-* then create the snapshot: `lxc-snapshot -n $name`
- * create with comment: `echo "mycomment" > /tmp/comment && lxc-snapshot -n $name -c /tmp/comment && rm -f /tmp/comment`
-* list all snapshots: `lxc-snapshot -LC -n $name`
-* restore a snapshot: `lxc-snapshot -n $name -r snap@`
-* create a new container from snapshot: `lxc-snapshot -n $name -r snap@ new$name`
-* delete a snapshot: `lxc-snapshot -n $name -d snap@`
+- Deletions of multiples init* files
+- Creation of initService.sh (based on initDebian.sh)
+   - Removing architecture configuration
+   - Dropping jessie support
+   - Use of lvm at container creation
+   - Use of fssize at container creation
+- Modification of initLXC.sh
+   - 4096 dhparam
+   - Remove Fedora/CentOS support
+- Modification of letsencrypt.sh
+   - Stronger configuration
+- Modification of nginx.sslconf.tpl
+   - 301 (instead of 302) for non https traffic
+   - IPv6
+   - stronger ciphers list
+   - ssl_ecdh_curve
+   - multiples header (HSTS, CSP, Referrer-Policy...)
